@@ -13,11 +13,12 @@ public class ProjectClient {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final RestOperations restOperations;
     private final String endpoint;
-    private final ConcurrentMap<Long, ProjectInfo> projectCache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Long, ProjectInfo> projectCache;
 
     public ProjectClient(RestOperations restOperations, String registrationServerEndpoint) {
         this.restOperations = restOperations;
         this.endpoint = registrationServerEndpoint;
+        this.projectCache = new ConcurrentHashMap<>();
     }
 
     @CircuitBreaker(name = "project", fallbackMethod = "getProjectFromCache")
@@ -27,12 +28,6 @@ public class ProjectClient {
     }
 
     public ProjectInfo getProjectFromCache(long projectId, Throwable cause) {
-        if(projectCache.containsKey(projectId)) {
-            logger.info("Getting project with id {} from cache", projectId);
-            return projectCache.get(projectId);
-        } else {
-            logger.error("Project not found in cache, returning null", projectId);
-            return null;
-        }
+        return projectCache.get(projectId);
     }
 }
